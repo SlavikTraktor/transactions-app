@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./server.js",
-    "build": "pkg ."
+    "build": "pkg .",
+    "postbuild": "editbin /subsystem:windows \"dist-app/transactions-app.exe\""
   },
   "author": "",
   "license": "ISC",
