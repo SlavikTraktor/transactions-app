@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./server.js",
     "build": "pkg .",
-    "postbuild": "editbin /subsystem:windows \"dist-app/transactions-app.exe\""
+    "editbin": "editbin /subsystem:windows \"dist-app/transactions-app.exe\""
   },
   "author": "",
   "license": "ISC",
@@ -22,6 +22,7 @@
   },
   "pkg": {
     "assets": [
+      "assets/**/*",
       "frontend/dist/**/*",
       "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
       "node_modules/systray2/traybin/tray_windows_release.exe"

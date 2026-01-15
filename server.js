@@ -68,10 +68,14 @@ try {
   fs.writeFileSync(logfile, "errror: " + error.toString());
 }
 
-// --- ТРЕЙ ---
+const iconPath = path.join(__dirname, 'assets', 'icon.ico');
+const iconBase64 = fs.readFileSync(iconPath).toString('base64');
+
 const tray = new SysTray({
   menu: {
-    label: "My Local App",
+    icon: iconBase64,
+    title: "STransactions",
+    label: "STransactions",
     items: [
       { title: "Открыть интерфейс", enabled: true },
       { title: "Выход", enabled: true },
