@@ -1,5 +1,5 @@
-node_modules
-dist-app
-db
+/node_modules
+/dist-app
+/db
 
 log.txt
