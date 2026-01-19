@@ -1,11 +1,12 @@
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
-const { exeDir, isBundle, port } = require("./constants");
+const { exeDir, isBundle, port, currenciesRateURL } = require("./constants");
 const { Logger } = require("./services/logger");
 const { DB, migrate } = require("./services/db");
 const { extractBinary } = require("./helpers/extractBinary");
 const { Systray } = require("./services/systray");
+const { default: axios } = require("axios");
 
 if (isBundle) {
   extractBinary(exeDir);
@@ -22,6 +23,15 @@ try {
   // Раздача фронтенда (папка dist должна быть внутри ресурсов nexe)
   const distPath = path.join(__dirname, "frontend/dist");
   app.use(express.static(distPath));
+
+  app.get("/api/currenciesrate", (req, res) => {
+    axios.get(currenciesRateURL).then((response) => {
+      res.json(response.data);
+    }).catch((error) => {
+      Logger.error(`Ошибка при получении курса валют: ${error.toString()}`);
+      res.status(500).json({ error: "Не удалось получить курс валют" });
+    });
+  });
 
   // API Эндпоинты
   app.get("/api/transactions", (req, res) => {

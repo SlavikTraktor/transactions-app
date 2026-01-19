@@ -21,6 +21,8 @@ const iconPath = path.join(__dirname, "assets", "icon.ico");
 
 const frontendURL = `http://localhost:${port}`;
 
+const currenciesRateURL = "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies/?currencies=USD&end=2025-12-30T20%3A00%3A00.000Z&start=2025-11-30T20%3A00%3A00.000Z";
+
 module.exports = {
   isBundle,
   exeDir,
@@ -33,4 +35,5 @@ module.exports = {
   frontendURL,
   iconPath,
   port,
+  currenciesRateURL,
 };
