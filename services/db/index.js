@@ -1,3 +1,4 @@
 const { DB } = require("./db");
+const { migrate } = require("./migrations");
 
-module.exports = { DB };
+module.exports = { DB, migrate };

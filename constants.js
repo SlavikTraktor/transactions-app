@@ -15,6 +15,10 @@ const dbPath = path.join(exeDir, "db", "data.db");
 // logfile path
 const logfile = path.join(exeDir, "log.txt");
 
+const iconPath = path.join(__dirname, "assets", "icon.ico");
+
+const frontendURL = "http://localhost:3000";
+
 module.exports = {
   isBundle,
   exeDir,
@@ -24,4 +28,6 @@ module.exports = {
   dbPath,
   externalTrayPath,
   internalTrayPath,
+  frontendURL,
+  iconPath,
 };
