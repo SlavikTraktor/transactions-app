@@ -30,7 +30,16 @@ class _DB {
         this.db.prepare(sql[0]).run(...sql[1]);
       }
     });
-    return transaction;
+    return transaction();
+  }
+
+  insertMany(prepare, paramsArray) {
+    const transaction = this.db.transaction(() => {
+      for (const params of paramsArray) {
+        prepare.run(...params);
+      }
+    });
+    return transaction();
   }
 
   close() {

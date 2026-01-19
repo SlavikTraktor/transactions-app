@@ -2,24 +2,38 @@ function migrate(DB) {
   DB.run(
     `
   CREATE TABLE IF NOT EXISTS sources (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    type TEXT NOT NULL
+    type TEXT NOT NULL UNIQUE
   )
 `,
   );
 
   DB.run(
     `
+    DELETE FROM sources WHERE type in ('bog', 'bog_business')
+    `,
+  );
+  DB.run(
+    `
+    INSERT OR IGNORE INTO sources (name, type) VALUES
+      ('Бог', 'bog'),
+      ('Бог бизнес', 'bog_business')
+    `,
+  );
+
+  // uuid timestamp amount description sender currency source_type
+  DB.run(
+    `
   CREATE TABLE IF NOT EXISTS transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    uuid TEXT UNIQUE NOT NULL,
     timestamp TEXT NOT NULL,
     amount REAL NOT NULL,
     description TEXT,
     sender TEXT,
     currency TEXT NOT NULL,
-    source_id INTEGER,
-    FOREIGN KEY (source_id) REFERENCES sources(id)
+    source_type TEXT,
+    FOREIGN KEY (source_type) REFERENCES sources(type)
   )
 `,
   );
