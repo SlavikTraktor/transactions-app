@@ -32,7 +32,6 @@ try {
   app.post("/api/transactions", (req, res) => {
     // uuid timestamp amount description sender currency source_type
     const { data } = req.body;
-    console.log(req.body);
     const prepareDB = DB.prepare(
       "INSERT OR REPLACE INTO transactions (uuid, timestamp, amount, description, sender, currency, source_type) VALUES (?, ?, ?, ?, ?, ?, ?)",
     );
