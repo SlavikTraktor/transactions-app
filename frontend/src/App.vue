@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
+import { Toaster } from 'vue-sonner';
+
 // import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
+  <Toaster />
   <header>
     <div class="wrapper">
       <!-- <HelloWorld msg="You did it!" /> -->
