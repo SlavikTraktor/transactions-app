@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
 import _ from 'lodash'
-import { BACKEND_URL } from '@/constants'
 import { toast } from 'vue-sonner'
 import EndSnack from '@/components/EndSnack.vue'
 import { format } from 'date-fns'
@@ -13,15 +11,10 @@ import STr from '@/components/ui/Table/STr.vue'
 import SThead from '@/components/ui/Table/SThead.vue'
 import STh from '@/components/ui/Table/STh.vue'
 import STBody from '@/components/ui/Table/STBody.vue'
+import { getCurrenciesRatesRange } from '@/api/getCurrencies'
+import { getTransactions, type Transaction } from '@/api/getTransactions'
 
-interface Transaction {
-  uuid: string
-  timestamp: string
-  amount: number
-  description: string
-  sender: string
-  currency: string
-  source_type: string
+type TransactionExpanded = Transaction & {
   conversion?: {
     fromCurrency: string
     toCurrency: string
@@ -30,44 +23,32 @@ interface Transaction {
   }
 }
 
-const transactions = ref<Transaction[]>([])
+const transactions = ref<TransactionExpanded[]>([])
 const error = ref<string | null>(null)
 
 const loadData = async () => {
   try {
-    // Делаем GET запрос
-    const response = await axios.get(`${BACKEND_URL}api/transactions`)
-    // В axios данные всегда лежат в поле .data
-    transactions.value = response.data
+    transactions.value = await getTransactions()
   } catch (err) {
     error.value = 'Не удалось загрузить данные'
     console.error(err)
   }
 }
 
-const makeConvertation = async () => {
+const makeConversion = async () => {
   const transactionsToConverse = transactions.value.filter((t) => t.currency !== 'GEL')
 
   const sortedTransactions = _.sortBy(transactionsToConverse, 'timestamp')
 
+  if (sortedTransactions.length === 0) {
+    toast.error('Нет транзакций для конвертации')
+    return
+  }
+
   const beginDate = sortedTransactions[0]?.timestamp
   const endDate = sortedTransactions[sortedTransactions.length - 1]?.timestamp
 
-  const currenciesRates = await axios
-    .get(`${BACKEND_URL}api/currenciesrate`, {
-      params: {
-        startDate: beginDate,
-        endDate: endDate,
-        ccy: 'USD',
-      },
-    })
-    .then((response) => {
-      // console.log('Currency rates:', response.data)
-      return response.data
-    })
-    .catch((error) => {
-      console.error('Error fetching currency rates:', error)
-    })
+  const currenciesRates = await getCurrenciesRatesRange(beginDate!, endDate!, ['USD'])
 
   for (const transaction of transactionsToConverse) {
     const formattedTimestamp = format(
@@ -75,11 +56,9 @@ const makeConvertation = async () => {
       "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
     )
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rateForDate = currenciesRates.find((rate: any) => rate.date === formattedTimestamp)
+    const rateForDate = currenciesRates.find((rate) => rate.date === formattedTimestamp)
     if (rateForDate) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { rate } = rateForDate.currencies.find((c: any) => c.code === transaction.currency)
+      const { rate } = rateForDate.currencies.find((c) => c.code === transaction.currency)!
       transaction.conversion = {
         fromCurrency: transaction.currency,
         toCurrency: 'GEL',
@@ -102,7 +81,7 @@ onMounted(loadData)
 
 <template>
   <main class="py-4 px-5">
-    <OutlineButton class="mb-2" @click="() => makeConvertation()">Make conversion</OutlineButton>
+    <OutlineButton class="mb-2" @click="() => makeConversion()">Make conversion</OutlineButton>
     <STable>
       <SThead>
         <STr>
@@ -110,7 +89,6 @@ onMounted(loadData)
           <STh>Timestamp</STh>
           <STh>Amount</STh>
           <STh>Amount (GEL)</STh>
-          <!-- <STh>Description</STh> -->
           <STh>Sender</STh>
           <STh>Currency</STh>
           <STh>Source Type</STh>
@@ -128,7 +106,6 @@ onMounted(loadData)
                 : transaction.conversion?.resultAmount
             }}
           </STd>
-          <!-- <STd >{{ transaction.description }}</STd> -->
           <STd>{{ transaction.sender }}</STd>
           <STd>{{ transaction.currency }}</STd>
           <STd>{{ transaction.source_type }}</STd>
