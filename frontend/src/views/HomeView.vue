@@ -6,6 +6,13 @@ import { BACKEND_URL } from '@/constants'
 import { toast } from 'vue-sonner'
 import EndSnack from '@/components/EndSnack.vue'
 import { format } from 'date-fns'
+import OutlineButton from '@/components/ui/OutlineButton.vue'
+import STd from '@/components/ui/Table/STd.vue'
+import STable from '@/components/ui/Table/STable.vue'
+import STr from '@/components/ui/Table/STr.vue'
+import SThead from '@/components/ui/Table/SThead.vue'
+import STh from '@/components/ui/Table/STh.vue'
+import STBody from '@/components/ui/Table/STBody.vue'
 
 interface Transaction {
   uuid: string
@@ -30,7 +37,6 @@ const loadData = async () => {
   try {
     // Делаем GET запрос
     const response = await axios.get(`${BACKEND_URL}api/transactions`)
-    console.log(response.data)
     // В axios данные всегда лежат в поле .data
     transactions.value = response.data
   } catch (err) {
@@ -39,7 +45,7 @@ const loadData = async () => {
   }
 }
 
-const showSnack = async () => {
+const makeConvertation = async () => {
   const transactionsToConverse = transactions.value.filter((t) => t.currency !== 'GEL')
 
   const sortedTransactions = _.sortBy(transactionsToConverse, 'timestamp')
@@ -47,22 +53,28 @@ const showSnack = async () => {
   const beginDate = sortedTransactions[0]?.timestamp
   const endDate = sortedTransactions[sortedTransactions.length - 1]?.timestamp
 
-  const currenciesRates = await axios.get(`${BACKEND_URL}api/currenciesrate`, {
-    params: {
-      startDate: beginDate,
-      endDate: endDate,
-      ccy: 'USD'
-    }
-  }).then((response) => {
-    console.log('Currency rates:', response.data)
-    return response.data
-  }).catch((error) => {
-    console.error('Error fetching currency rates:', error)
-  })
+  const currenciesRates = await axios
+    .get(`${BACKEND_URL}api/currenciesrate`, {
+      params: {
+        startDate: beginDate,
+        endDate: endDate,
+        ccy: 'USD',
+      },
+    })
+    .then((response) => {
+      // console.log('Currency rates:', response.data)
+      return response.data
+    })
+    .catch((error) => {
+      console.error('Error fetching currency rates:', error)
+    })
 
   for (const transaction of transactionsToConverse) {
-    const formattedTimestamp = format(new Date(transaction.timestamp), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    
+    const formattedTimestamp = format(
+      new Date(transaction.timestamp),
+      "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+    )
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rateForDate = currenciesRates.find((rate: any) => rate.date === formattedTimestamp)
     if (rateForDate) {
@@ -72,7 +84,7 @@ const showSnack = async () => {
         fromCurrency: transaction.currency,
         toCurrency: 'GEL',
         rate,
-        resultAmount: +(transaction.amount * rate).toFixed(2)
+        resultAmount: +(transaction.amount * rate).toFixed(2),
       }
     }
     const index = transactions.value.findIndex((t) => t.uuid === transaction.uuid)
@@ -82,40 +94,46 @@ const showSnack = async () => {
   }
 
   console.log('Updated transactions with conversion:', transactions.value)
-  toast.success(EndSnack)
+  toast.success(EndSnack, { closeButton: true })
 }
 
 onMounted(loadData)
 </script>
 
 <template>
-  <main>
-    <button @click="() => showSnack()">Make conversion</button>
-    <table>
-      <thead>
-        <tr>
-          <th>UUID</th>
-          <th>Timestamp</th>
-          <th>Amount</th>
-          <th>Amount (GEL)</th>
-          <th>Description</th>
-          <th>Sender</th>
-          <th>Currency</th>
-          <th>Source Type</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="transaction in transactions" :key="transaction.uuid">
-          <td>{{ transaction.uuid }}</td>
-          <td>{{ transaction.timestamp }}</td>
-          <td>{{ transaction.amount }}</td>
-          <td>{{ transaction.currency === 'GEL' ? transaction.amount : transaction.conversion?.resultAmount }}</td>
-          <td>{{ transaction.description }}</td>
-          <td>{{ transaction.sender }}</td>
-          <td>{{ transaction.currency }}</td>
-          <td>{{ transaction.source_type }}</td>
-        </tr>
-      </tbody>
-    </table>
+  <main class="py-4 px-5">
+    <OutlineButton class="mb-2" @click="() => makeConvertation()">Make conversion</OutlineButton>
+    <STable>
+      <SThead>
+        <STr>
+          <STh>UUID</STh>
+          <STh>Timestamp</STh>
+          <STh>Amount</STh>
+          <STh>Amount (GEL)</STh>
+          <!-- <STh>Description</STh> -->
+          <STh>Sender</STh>
+          <STh>Currency</STh>
+          <STh>Source Type</STh>
+        </STr>
+      </SThead>
+      <STBody>
+        <STr v-for="transaction in transactions" :key="transaction.uuid">
+          <STd>{{ transaction.uuid }}</STd>
+          <STd>{{ transaction.timestamp }}</STd>
+          <STd>{{ transaction.amount }}</STd>
+          <STd>
+            {{
+              transaction.currency === 'GEL'
+                ? transaction.amount
+                : transaction.conversion?.resultAmount
+            }}
+          </STd>
+          <!-- <STd >{{ transaction.description }}</STd> -->
+          <STd>{{ transaction.sender }}</STd>
+          <STd>{{ transaction.currency }}</STd>
+          <STd>{{ transaction.source_type }}</STd>
+        </STr>
+      </STBody>
+    </STable>
   </main>
 </template>
