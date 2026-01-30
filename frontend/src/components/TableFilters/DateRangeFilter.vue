@@ -2,8 +2,16 @@
 import DatePicker from 'primevue/datepicker'
 import { ref } from 'vue'
 import BaseFilter from './BaseFilter.vue';
+import { useTransactionsFiltersStore } from '@/stores/transactionsFilters'
 
-const dateRange = ref<[Date, Date | null]>()
+const store = useTransactionsFiltersStore()
+const dateRange = ref<[Date, Date | null] | undefined>(store.dateRange)
+
+function clear() {
+  dateRange.value = undefined
+}
+
+defineExpose({ value : dateRange, clear });
 
 </script>
 
