@@ -7,7 +7,7 @@ export interface CurrencyRate {
   diff: number //-0.0004
   diffFormated: string //'0.0004'
   name: string //'აშშ დოლარი'
-  quantity: number
+  quantity: number // 1
   rate: number //2.6991
   rateFormated: string //'2.6991'
   validFromDate: string //'2025-12-12T00:00:00.000Z'

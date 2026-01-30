@@ -68,7 +68,7 @@ try {
     const prepareDB = DB.prepare(
       "INSERT OR REPLACE INTO transactions (uuid, timestamp, amount, description, sender, currency, source_type) VALUES (?, ?, ?, ?, ?, ?, ?)",
     );
-    const transactionsValues = data.map((t) => [t.uuid, t.timestamp.replace('T', ' '), t.amount, t.description, t.sender, t.currency, t.source_type]);
+    const transactionsValues = data.map((t) => [t.uuid, t.timestamp.replace('T', ' ').replace('Z', ''), t.amount, t.description, t.sender, t.currency, t.source_type]);
     DB.insertMany(prepareDB, transactionsValues);
     res.json({ success: true });
   });

@@ -9,8 +9,8 @@ const dateRange = ref<[Date, Date | null]>()
 
 <template>
   <BaseFilter>
-    <template v-slot:title>Выбор диапазона дат:</template>
-    <DatePicker v-model="dateRange" selectionMode="range" :manualInput="false" showClear :hideOnRangeSelection="true" />
+    <template v-slot:title>Диапазон дат:</template>
+    <DatePicker v-model="dateRange" selectionMode="range" :manualInput="false" showClear :hideOnRangeSelection="true" fluid />
   </BaseFilter>
 </template>
 

@@ -14,7 +14,7 @@ import STBody from '@/components/ui/Table/STBody.vue'
 import { getCurrenciesRatesRange } from '@/api/getCurrencies'
 import { getTransactions, type Transaction } from '@/api/getTransactions'
 import SSidebar from '@/components/ui/SSidebar.vue'
-import TableFilters from '@/components/TableFilters/TableFilters.vue'
+import TableFiltersButton from '@/components/TableFilters/TableFiltersButton.vue'
 
 type TransactionExpanded = Transaction & {
   conversion?: {
@@ -28,7 +28,6 @@ type TransactionExpanded = Transaction & {
 const transactions = ref<TransactionExpanded[]>([])
 const error = ref<string | null>(null)
 const isSidebarOpen = ref<boolean>(false)
-const isModalOpen = ref<boolean>(false)
 
 const loadData = async () => {
   try {
@@ -41,10 +40,6 @@ const loadData = async () => {
 
 const openSidebar = () => {
   isSidebarOpen.value = true
-}
-
-const openModal = () => {
-  isModalOpen.value = true
 }
 
 const makeConversion = async () => {
@@ -95,11 +90,10 @@ onMounted(loadData)
   <main class="py-4 px-5">
     <OutlineButton class="mb-2 mr-2" @click="() => makeConversion()">Конвертировать</OutlineButton>
     <OutlineButton class="mb-2 mr-2" @click="() => openSidebar()">Open sidebar</OutlineButton>
-    <OutlineButton class="mb-2" @click="() => openModal()">Фильтры</OutlineButton>
+    <TableFiltersButton />
     <SSidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false">
       <p>Sidebar content goes here.</p>
     </SSidebar>
-    <TableFilters :isOpen="isModalOpen" @close="isModalOpen = false" />
     <STable>
       <SThead>
         <STr>
