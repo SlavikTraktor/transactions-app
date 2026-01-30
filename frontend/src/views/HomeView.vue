@@ -93,9 +93,9 @@ onMounted(loadData)
 
 <template>
   <main class="py-4 px-5">
-    <OutlineButton class="mb-2 mr-2" @click="() => makeConversion()">Make conversion</OutlineButton>
+    <OutlineButton class="mb-2 mr-2" @click="() => makeConversion()">Конвертировать</OutlineButton>
     <OutlineButton class="mb-2 mr-2" @click="() => openSidebar()">Open sidebar</OutlineButton>
-    <OutlineButton class="mb-2" @click="() => openModal()">Open modal</OutlineButton>
+    <OutlineButton class="mb-2" @click="() => openModal()">Фильтры</OutlineButton>
     <SSidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false">
       <p>Sidebar content goes here.</p>
     </SSidebar>
