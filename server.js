@@ -7,6 +7,7 @@ const { Logger } = require("./services/logger");
 const { DB, migrate } = require("./services/db");
 const { extractBinary } = require("./helpers/extractBinary");
 const { Systray } = require("./services/systray");
+const { debugSql } = require("./helpers/debugSQL");
 const { default: axios } = require("axios");
 
 if (isBundle) {
@@ -67,12 +68,16 @@ try {
     let sql = "SELECT * FROM transactions";
     const params = [];
     if (sources && sources.length > 0) {
-      sql += " WHERE source_type IN (?)";
-      params.push(sources);
+      const sourcesArray = sources.split(",");
+      const sqlPlaceholder = sourcesArray.map(() => "?").join(",");
+      sql += " WHERE source_type IN (" + sqlPlaceholder + ")";
+      params.push(...sourcesArray);
     }
     if (currencies && currencies.length > 0) {
-      sql += params.length > 0 ? " AND currency IN (?)" : " WHERE currency IN (?)";
-      params.push(currencies);
+      const currenciesArray = currencies.split(",");
+      const sqlPlaceholder = currenciesArray.map(() => "?").join(",");
+      sql += params.length > 0 ? " AND currency IN (" + sqlPlaceholder + ")" : " WHERE currency IN (" + sqlPlaceholder + ")";
+      params.push(...currenciesArray);
     }
     if (startDate) {
       sql += params.length > 0 ? " AND timestamp >= ?" : " WHERE timestamp >= ?";
@@ -83,6 +88,7 @@ try {
       params.push(endDate);
     }
     const rows = DB.prepare(sql).all(...params);
+
     res.json(rows);
   });
 
