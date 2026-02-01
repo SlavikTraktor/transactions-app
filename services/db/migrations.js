@@ -8,20 +8,15 @@ function migrate(DB) {
 `,
   );
 
-  try {
-    DB.run(
-      `
-      DELETE FROM sources WHERE type in ('bog', 'bog_business')
-      `,
-    );
-    DB.run(
-      `
-      INSERT OR IGNORE INTO sources (name, type) VALUES
-        ('Бог', 'bog'),
-        ('Бог бизнес', 'bog_business')
-      `,
-    );
-  } catch (e) { }
+  DB.run(
+    `
+    INSERT OR IGNORE INTO sources (name, type) VALUES
+      ('Бог', 'bog'),
+      ('Бог бизнес', 'bog_business'),
+      ('Тинькофф', 'tinkoff'),
+      ('Paypal', 'paypal')
+    `,
+  );
 
   // uuid timestamp amount description sender currency source_type
   DB.run(
