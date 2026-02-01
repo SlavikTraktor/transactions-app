@@ -5,6 +5,7 @@ export const useTransactionsFiltersStore = defineStore('transactionsFilters', ()
   const dateRange = ref<[Date, Date | null]>()
   const currencies = ref<string[]>()
   const sources = ref<string[]>()
+  const isMonthlyView = ref(true)
 
   const activeFiltersCount = computed(() => {
     let count = 0
@@ -21,5 +22,5 @@ export const useTransactionsFiltersStore = defineStore('transactionsFilters', ()
     return count
   })
 
-  return { dateRange, currencies, sources, activeFiltersCount }
+  return { dateRange, currencies, sources, isMonthlyView, activeFiltersCount }
 })
