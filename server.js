@@ -58,7 +58,31 @@ try {
 
   // API Эндпоинты
   app.get("/api/transactions", (req, res) => {
-    const rows = DB.prepare("SELECT * FROM transactions").all();
+    const sources = req.query.sources;
+    const currencies = req.query.currencies;
+    const startDate = req.query.startDate;
+    const endDate = req.query.endDate;
+
+    const id = req.query.id;
+    let sql = "SELECT * FROM transactions";
+    const params = [];
+    if (sources && sources.length > 0) {
+      sql += " WHERE source_type IN (?)";
+      params.push(sources);
+    }
+    if (currencies && currencies.length > 0) {
+      sql += params.length > 0 ? " AND currency IN (?)" : " WHERE currency IN (?)";
+      params.push(currencies);
+    }
+    if (startDate) {
+      sql += params.length > 0 ? " AND timestamp >= ?" : " WHERE timestamp >= ?";
+      params.push(startDate);
+    }
+    if (endDate) {
+      sql += params.length > 0 ? " AND timestamp <= ?" : " WHERE timestamp <= ?";
+      params.push(endDate);
+    }
+    const rows = DB.prepare(sql).all(...params);
     res.json(rows);
   });
 

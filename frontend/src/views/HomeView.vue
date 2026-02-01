@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, effect } from 'vue'
 import _ from 'lodash'
 import { toast } from 'vue-sonner'
 import EndSnack from '@/components/EndSnack.vue'
@@ -15,6 +15,8 @@ import { getCurrenciesRatesRange } from '@/api/getCurrencies'
 import { getTransactions, type Transaction } from '@/api/getTransactions'
 import SSidebar from '@/components/ui/SSidebar.vue'
 import TableFiltersButton from '@/components/TableFilters/TableFiltersButton.vue'
+import { useTransactionsFiltersStore } from '@/stores/transactionsFilters'
+import { DATE_FORMAT } from '@/constants'
 
 type TransactionExpanded = Transaction & {
   conversion?: {
@@ -29,14 +31,26 @@ const transactions = ref<TransactionExpanded[]>([])
 const error = ref<string | null>(null)
 const isSidebarOpen = ref<boolean>(false)
 
+const store = useTransactionsFiltersStore()
 const loadData = async () => {
   try {
-    transactions.value = await getTransactions()
+    transactions.value = await getTransactions({
+      currencies: store.currencies,
+      sources: store.sources,
+      startDate:
+        store.dateRange && store.dateRange[0] ? format(store.dateRange[0], DATE_FORMAT) : undefined,
+      endDate:
+        store.dateRange && store.dateRange[1] ? format(store.dateRange[1], DATE_FORMAT) : undefined,
+    })
   } catch (err) {
     error.value = 'Не удалось загрузить данные'
     console.error(err)
   }
 }
+
+effect(() => {
+  loadData()
+})
 
 const openSidebar = () => {
   isSidebarOpen.value = true
@@ -83,7 +97,12 @@ const makeConversion = async () => {
   toast.success(EndSnack, { closeButton: true })
 }
 
-onMounted(loadData)
+effect(() => {
+  if (error.value) {
+    toast.error(error.value)
+  }
+})
+
 </script>
 
 <template>
