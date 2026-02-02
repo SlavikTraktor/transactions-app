@@ -15,6 +15,7 @@ import { getCurrenciesRatesRange } from '@/api/getCurrencies'
 import SSidebar from '@/components/ui/SSidebar.vue'
 import TableFiltersButton from '@/components/TableFilters/TableFiltersButton.vue'
 import { useTransactionsStore } from '@/stores/transactions'
+import SummaryButton from '@/components/SummaryModal/SummaryButton.vue'
 
 const error = ref<string | null>(null)
 const isSidebarOpen = ref<boolean>(false)
@@ -26,43 +27,46 @@ const openSidebar = () => {
 }
 
 const makeConversion = async () => {
-  const transactionsToConverse = transactionsStore.transactions.filter((t) => t.currency !== 'GEL')
+  const transactionsByCurrency = _.groupBy(transactionsStore.transactions, 'currency')
 
-  const sortedTransactions = _.sortBy(transactionsToConverse, 'timestamp')
+  for (const currency in transactionsByCurrency) {
+    const sortedTransactions = _.sortBy(transactionsByCurrency[currency]!, 'timestamp')
+    for (const transaction of sortedTransactions) {
+      if (currency === 'GEL') {
+        transaction.conversion = {
+          fromCurrency: currency,
+          toCurrency: currency,
+          rate: 1,
+          resultAmount: transaction.amount,
+        }
+      } else {
+        const beginDate = sortedTransactions[0]?.timestamp
+        const endDate = sortedTransactions[sortedTransactions.length - 1]?.timestamp
+        const formattedTimestamp = format(
+          new Date(transaction.timestamp),
+          "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+        )
 
-  if (sortedTransactions.length === 0) {
-    toast.error('Нет транзакций для конвертации')
-    return
-  }
+        const currenciesRates = await getCurrenciesRatesRange(beginDate!, endDate!, [currency])
 
-  const beginDate = sortedTransactions[0]?.timestamp
-  const endDate = sortedTransactions[sortedTransactions.length - 1]?.timestamp
+        const rateForDate = currenciesRates.find((rate) => rate.date === formattedTimestamp)
+        if (rateForDate) {
+          const { rate } = rateForDate.currencies.find((c) => c.code === transaction.currency)!
+          transaction.conversion = {
+            fromCurrency: transaction.currency,
+            toCurrency: 'GEL',
+            rate,
+            resultAmount: +(transaction.amount * rate).toFixed(2),
+          }
+        }
+      }
 
-  const currenciesRates = await getCurrenciesRatesRange(beginDate!, endDate!, ['USD'])
-
-  for (const transaction of transactionsToConverse) {
-    const formattedTimestamp = format(
-      new Date(transaction.timestamp),
-      "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-    )
-
-    const rateForDate = currenciesRates.find((rate) => rate.date === formattedTimestamp)
-    if (rateForDate) {
-      const { rate } = rateForDate.currencies.find((c) => c.code === transaction.currency)!
-      transaction.conversion = {
-        fromCurrency: transaction.currency,
-        toCurrency: 'GEL',
-        rate,
-        resultAmount: +(transaction.amount * rate).toFixed(2),
+      const index = transactionsStore.transactions.findIndex((t) => t.uuid === transaction.uuid)
+      if (index !== -1) {
+        transactionsStore.transactions[index]!.conversion = transaction.conversion
       }
     }
-    const index = transactionsStore.transactions.findIndex((t) => t.uuid === transaction.uuid)
-    if (index !== -1) {
-      transactionsStore.transactions[index]!.conversion = transaction.conversion
-    }
   }
-
-  console.log('Updated transactions with conversion:', transactionsStore.transactions)
   toast.success(EndSnack, { closeButton: true })
 }
 
@@ -75,14 +79,16 @@ effect(() => {
 onMounted(() => {
   transactionsStore.loadTransactions()
 })
-
 </script>
 
 <template>
   <main class="py-4 px-5">
-    <OutlineButton class="mb-2 mr-2" @click="() => makeConversion()">Конвертировать</OutlineButton>
-    <OutlineButton class="mb-2 mr-2" @click="() => openSidebar()">Open sidebar</OutlineButton>
-    <TableFiltersButton />
+    <div class="flex gap-2 mb-2">
+      <OutlineButton @click="() => makeConversion()">Конвертировать</OutlineButton>
+      <OutlineButton @click="() => openSidebar()">Open sidebar</OutlineButton>
+      <TableFiltersButton />
+      <SummaryButton />
+    </div>
     <SSidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false">
       <p>Sidebar content goes here.</p>
     </SSidebar>
@@ -104,11 +110,7 @@ onMounted(() => {
           <STd>{{ transaction.timestamp }}</STd>
           <STd>{{ transaction.amount }}</STd>
           <STd>
-            {{
-              transaction.currency === 'GEL'
-                ? transaction.amount
-                : transaction.conversion?.resultAmount
-            }}
+            {{ transaction.conversion?.resultAmount }}
           </STd>
           <STd>{{ transaction.sender }}</STd>
           <STd>{{ transaction.currency }}</STd>

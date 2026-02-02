@@ -5,7 +5,7 @@ import { DATE_FORMAT } from '@/constants'
 import { format } from 'date-fns'
 import { useTransactionsFiltersStore } from './transactionsFilters'
 
-type TransactionExpanded = Transaction & {
+export type TransactionExpanded = Transaction & {
   conversion?: {
     fromCurrency: string
     toCurrency: string

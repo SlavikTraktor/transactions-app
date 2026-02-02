@@ -19,7 +19,7 @@ const filtersCountString = computed(() => {
 </script>
 
 <template>
-  <OutlineButton class="mb-2" @click="() => openModal()">
+  <OutlineButton @click="() => openModal()">
     Фильтры
     <span class="text-gray-400">{{ filtersCountString }}</span>
   </OutlineButton>
