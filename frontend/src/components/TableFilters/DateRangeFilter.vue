@@ -10,7 +10,7 @@ const store = useTransactionsFiltersStore()
 const dateRange = ref<[Date, Date | null] | undefined>(store.dateRange)
 const month = ref<Date | undefined>(store.dateRange ? store.dateRange[0] : undefined)
 
-const resDateRange = computed(() => {
+const resDateRange = computed<[Date, Date | null] | undefined>(() => {
   if (!store.isMonthlyView) {
     return dateRange.value
   }

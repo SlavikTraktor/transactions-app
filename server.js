@@ -87,6 +87,9 @@ try {
       sql += params.length > 0 ? " AND timestamp <= ?" : " WHERE timestamp <= ?";
       params.push(endDate);
     }
+
+    sql += " ORDER BY timestamp DESC";
+
     const rows = DB.prepare(sql).all(...params);
 
     res.json(rows);
@@ -96,7 +99,7 @@ try {
     // uuid timestamp amount description sender currency source_type
     const { data } = req.body;
     const prepareDB = DB.prepare(
-      "INSERT OR REPLACE INTO transactions (uuid, timestamp, amount, description, sender, currency, source_type) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT OR IGNORE INTO transactions (uuid, timestamp, amount, description, sender, currency, source_type) VALUES (?, ?, ?, ?, ?, ?, ?)",
     );
     const transactionsValues = data.map((t) => [t.uuid, t.timestamp.replace('T', ' ').replace('Z', ''), t.amount, t.description, t.sender, t.currency, t.source_type]);
     DB.insertMany(prepareDB, transactionsValues);

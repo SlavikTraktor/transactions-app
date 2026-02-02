@@ -12,52 +12,21 @@ import SThead from '@/components/ui/Table/SThead.vue'
 import STh from '@/components/ui/Table/STh.vue'
 import STBody from '@/components/ui/Table/STBody.vue'
 import { getCurrenciesRatesRange } from '@/api/getCurrencies'
-import { getTransactions, type Transaction } from '@/api/getTransactions'
 import SSidebar from '@/components/ui/SSidebar.vue'
 import TableFiltersButton from '@/components/TableFilters/TableFiltersButton.vue'
-import { useTransactionsFiltersStore } from '@/stores/transactionsFilters'
-import { DATE_FORMAT } from '@/constants'
+import { useTransactionsStore } from '@/stores/transactions'
 
-type TransactionExpanded = Transaction & {
-  conversion?: {
-    fromCurrency: string
-    toCurrency: string
-    rate: number
-    resultAmount: number
-  }
-}
-
-const transactions = ref<TransactionExpanded[]>([])
 const error = ref<string | null>(null)
 const isSidebarOpen = ref<boolean>(false)
 
-const store = useTransactionsFiltersStore()
-const loadData = async () => {
-  try {
-    transactions.value = await getTransactions({
-      currencies: store.currencies,
-      sources: store.sources,
-      startDate:
-        store.dateRange && store.dateRange[0] ? format(store.dateRange[0], DATE_FORMAT) : undefined,
-      endDate:
-        store.dateRange && store.dateRange[1] ? format(store.dateRange[1], DATE_FORMAT) : undefined,
-    })
-  } catch (err) {
-    error.value = 'Не удалось загрузить данные'
-    console.error(err)
-  }
-}
-
-effect(() => {
-  loadData()
-})
+const transactionsStore = useTransactionsStore()
 
 const openSidebar = () => {
   isSidebarOpen.value = true
 }
 
 const makeConversion = async () => {
-  const transactionsToConverse = transactions.value.filter((t) => t.currency !== 'GEL')
+  const transactionsToConverse = transactionsStore.transactions.filter((t) => t.currency !== 'GEL')
 
   const sortedTransactions = _.sortBy(transactionsToConverse, 'timestamp')
 
@@ -87,13 +56,13 @@ const makeConversion = async () => {
         resultAmount: +(transaction.amount * rate).toFixed(2),
       }
     }
-    const index = transactions.value.findIndex((t) => t.uuid === transaction.uuid)
+    const index = transactionsStore.transactions.findIndex((t) => t.uuid === transaction.uuid)
     if (index !== -1) {
-      transactions.value[index]!.conversion = transaction.conversion
+      transactionsStore.transactions[index]!.conversion = transaction.conversion
     }
   }
 
-  console.log('Updated transactions with conversion:', transactions.value)
+  console.log('Updated transactions with conversion:', transactionsStore.transactions)
   toast.success(EndSnack, { closeButton: true })
 }
 
@@ -101,6 +70,10 @@ effect(() => {
   if (error.value) {
     toast.error(error.value)
   }
+})
+
+onMounted(() => {
+  transactionsStore.loadTransactions()
 })
 
 </script>
@@ -126,7 +99,7 @@ effect(() => {
         </STr>
       </SThead>
       <STBody>
-        <STr v-for="transaction in transactions" :key="transaction.uuid">
+        <STr v-for="transaction in transactionsStore.transactions" :key="transaction.uuid">
           <STd>{{ transaction.uuid }}</STd>
           <STd>{{ transaction.timestamp }}</STd>
           <STd>{{ transaction.amount }}</STd>

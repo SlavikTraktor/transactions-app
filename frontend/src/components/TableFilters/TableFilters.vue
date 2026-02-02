@@ -20,9 +20,11 @@ const currencyFilter = ref<InstanceType<typeof CurrencyFilter>>()
 const sourceFilter = ref<InstanceType<typeof SourceFilter>>()
 
 function applyFilters() {
-  store.dateRange = dateRangeFilter.value?.value
-  store.currencies = currencyFilter.value?.value
-  store.sources = sourceFilter.value?.value
+  store.setFilters({
+    dateRange: dateRangeFilter.value?.value,
+    currencies: currencyFilter.value?.value,
+    sources: sourceFilter.value?.value,
+  })
   emit('close')
 }
 

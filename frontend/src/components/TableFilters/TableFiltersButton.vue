@@ -16,13 +16,13 @@ const filtersCountString = computed(() => {
   const count = store.activeFiltersCount
   return count > 0 ? `(${count})` : ''
 })
-
 </script>
 
 <template>
-  <OutlineButton class="mb-2" @click="() => openModal()"
-    >Фильтры <span class="text-gray-400">{{ filtersCountString }}</span></OutlineButton
-  >
+  <OutlineButton class="mb-2" @click="() => openModal()">
+    Фильтры
+    <span class="text-gray-400">{{ filtersCountString }}</span>
+  </OutlineButton>
   <TableFilters :isOpen="isModalOpen" @close="isModalOpen = false" />
 </template>
 
