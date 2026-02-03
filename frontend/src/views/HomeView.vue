@@ -31,6 +31,13 @@ const makeConversion = async () => {
 
   for (const currency in transactionsByCurrency) {
     const sortedTransactions = _.sortBy(transactionsByCurrency[currency]!, 'timestamp')
+
+    const beginDate = sortedTransactions[0]?.timestamp
+    const endDate = sortedTransactions[sortedTransactions.length - 1]?.timestamp
+
+    const currenciesRates =
+      currency === 'GEL' ? [] : await getCurrenciesRatesRange(beginDate!, endDate!, [currency])
+
     for (const transaction of sortedTransactions) {
       if (currency === 'GEL') {
         transaction.conversion = {
@@ -40,14 +47,10 @@ const makeConversion = async () => {
           resultAmount: transaction.amount,
         }
       } else {
-        const beginDate = sortedTransactions[0]?.timestamp
-        const endDate = sortedTransactions[sortedTransactions.length - 1]?.timestamp
         const formattedTimestamp = format(
           new Date(transaction.timestamp),
           "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
         )
-
-        const currenciesRates = await getCurrenciesRatesRange(beginDate!, endDate!, [currency])
 
         const rateForDate = currenciesRates.find((rate) => rate.date === formattedTimestamp)
         if (rateForDate) {
