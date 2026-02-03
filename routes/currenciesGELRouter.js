@@ -5,7 +5,6 @@ const { currenciesRateRangeURL, currenciesRateSingleURL } = require("../constant
 const { default: axios } = require("axios");
 const router = express.Router();
 
-// Этот эндпоинт будет доступен по пути /api/data/save
 router.get("/currenciesrate", (req, res) => {
   const today = new Date();
   const monthStartDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);

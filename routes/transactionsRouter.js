@@ -2,7 +2,6 @@ const express = require("express");
 const { DB } = require("../services/db");
 const router = express.Router();
 
-// Этот эндпоинт будет доступен по пути /api/data/save
 router.get("/transactions", (req, res) => {
   const sources = req.query.sources;
   const currencies = req.query.currencies;

@@ -30,7 +30,6 @@ try {
   app.use("/api", currenciesGELRouter);
   app.use("/api", transactionsRouter);
 
-  // SPA роутинг: всё остальное в index.html
   app.get(/^(?!\/api).+/, (req, res) => {
     res.sendFile(path.join(distPath, "index.html"));
   });
@@ -38,7 +37,6 @@ try {
   const server = app.listen(port, async () => {
     console.log(`Сервер запущен на http://localhost:${port}`);
     Logger.log(`Сервер запущен на http://localhost:${port}`);
-    //   openBrowser("http://localhost:3000");
   });
 } catch (error) {
   Logger.error(error.toString());
