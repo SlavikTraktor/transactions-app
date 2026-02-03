@@ -1,8 +1,8 @@
 const express = require("express");
 const { Logger } = require("../services/logger");
 const { lastDayOfMonth } = require("date-fns");
-const { currenciesRateRangeURL, currenciesRateSingleURL } = require("../constants");
-const { default: axios } = require("axios");
+const { CurrenciesRange } = require("../services/currenciesRange");
+const { CurrencyDate } = require("../services/currencyDate");
 const router = express.Router();
 
 router.get("/currenciesrate", (req, res) => {
@@ -12,14 +12,9 @@ router.get("/currenciesrate", (req, res) => {
   req.query.startDate = req.query.startDate || monthStartDate.toISOString();
   req.query.endDate = req.query.endDate || monthEndDate.toISOString();
   req.query.ccy = req.query.ccy || "USD";
-  const url = currenciesRateRangeURL
-    .replace("{startDate}", req.query.startDate)
-    .replace("{endDate}", req.query.endDate)
-    .replace("{ccy}", req.query.ccy);
-  axios
-    .get(url)
+  CurrenciesRange.fetch(req.query.startDate, req.query.endDate, req.query.ccy)
     .then((response) => {
-      res.json(response.data);
+      res.json(response);
     })
     .catch((error) => {
       Logger.error(`Ошибка при получении курса валют: ${error.toString()}`);
@@ -33,15 +28,13 @@ router.get("/currencyrate", (req, res) => {
     return;
   }
   req.query.ccy = req.query.ccy || "USD";
-  const url = currenciesRateSingleURL.replace("{date}", req.query.date).replace("{ccy}", req.query.ccy);
-  axios
-    .get(url)
+  CurrencyDate.fetch(req.query.date, req.query.ccy)
     .then((response) => {
-      res.json(response.data);
+      res.json(response);
     })
     .catch((error) => {
-      Logger.error(`Ошибка при получении курса валют: ${error.toString()}`);
-      res.status(500).json({ error: "Не удалось получить курс валют" });
+      Logger.error(`Ошибка при получении курса валют на дату: ${error.toString()}`);
+      res.status(500).json({ error: "Не удалось получить курс валют на дату" });
     });
 });
 
