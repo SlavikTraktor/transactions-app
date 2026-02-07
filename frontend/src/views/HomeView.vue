@@ -80,7 +80,9 @@ effect(() => {
 })
 
 onMounted(() => {
-  transactionsStore.loadTransactions()
+  if (transactionsStore.transactions.length === 0) {
+    transactionsStore.loadTransactions()
+  }
 })
 </script>
 
