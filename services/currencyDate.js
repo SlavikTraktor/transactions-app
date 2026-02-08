@@ -41,10 +41,12 @@ class _CurrencyDate {
     const cacheKey = this.getCacheKey(date, ccy);
     const cacheValue = this.getCacheValue(cacheKey);
     if (cacheValue) {
+      console.log("Cache 1");
       return cacheValue;
     }
 
-    const url = currenciesRateSingleURL.replace("{date}", req.query.date).replace("{ccy}", req.query.ccy);
+    const url = currenciesRateSingleURL.replace("{date}", date).replace("{ccy}", ccy);
+      console.log("Request 1");
 
     const currencyDate = await axios
       .get(url)

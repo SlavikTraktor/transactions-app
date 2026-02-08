@@ -11,11 +11,12 @@ import STr from '@/components/ui/Table/STr.vue'
 import SThead from '@/components/ui/Table/SThead.vue'
 import STh from '@/components/ui/Table/STh.vue'
 import STBody from '@/components/ui/Table/STBody.vue'
-import { getCurrenciesRatesRange } from '@/api/getCurrencies'
+import { getCurrenciesRatesRange } from '@/api/getCurrenciesRatesRange'
 import SSidebar from '@/components/ui/SSidebar.vue'
 import TableFiltersButton from '@/components/TableFilters/TableFiltersButton.vue'
 import { useTransactionsStore } from '@/stores/transactions'
 import SummaryButton from '@/components/SummaryModal/SummaryButton.vue'
+import { getCurrenciesRate } from '@/api/getCurrenciesRate'
 
 const error = ref<string | null>(null)
 const isSidebarOpen = ref<boolean>(false)
@@ -52,15 +53,19 @@ const makeConversion = async () => {
           "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
         )
 
-        const rateForDate = currenciesRates.find((rate) => rate.date === formattedTimestamp)
-        if (rateForDate) {
-          const { rate } = rateForDate.currencies.find((c) => c.code === transaction.currency)!
-          transaction.conversion = {
-            fromCurrency: transaction.currency,
-            toCurrency: 'GEL',
-            rate,
-            resultAmount: +(transaction.amount * rate).toFixed(2),
-          }
+        let rateForDate = currenciesRates.find((rate) => rate.date === formattedTimestamp)
+        if (!rateForDate) {
+          const rates = await getCurrenciesRate(formattedTimestamp, [currency])
+          rateForDate = rates[0];
+        }
+        const { rate, quantity } = rateForDate.currencies.find(
+          (c) => c.code === transaction.currency,
+        )!
+        transaction.conversion = {
+          fromCurrency: transaction.currency,
+          toCurrency: 'GEL',
+          rate,
+          resultAmount: +((transaction.amount * rate) / quantity).toFixed(2),
         }
       }
 

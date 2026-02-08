@@ -34,7 +34,15 @@ defineExpose({ value: resDateRange, clear })
 
 <template>
   <BaseFilter>
-    <template v-slot:title>Диапазон дат:</template>
+    <template v-slot:title>
+      Диапазон дат:
+      <span
+        class="bg-gray-200 px-1.5 rounded-full cursor-pointer"
+        v-tooltip.top="'Если оставить пустым, то показывается текущий месяц'"
+      >
+        ?
+      </span>
+    </template>
     <div class="flex items-center mb-2">
       <ToggleSwitch inputId="monthlyView" v-model="store.isMonthlyView" />
       <label for="monthlyView" class="text-sm text-gray-400 pl-2 cursor-pointer"
