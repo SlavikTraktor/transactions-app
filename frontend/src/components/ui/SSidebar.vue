@@ -15,7 +15,7 @@ const emit = defineEmits(['close'])
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="isOpen" class="fixed inset-0 bg-black/40 z-40" @click="emit('close')" />
+      <div v-if="isOpen" class="fixed inset-0 bg-black/40 z-60" @click="emit('close')" />
     </Transition>
 
     <Transition
@@ -28,7 +28,7 @@ const emit = defineEmits(['close'])
     >
       <aside
         v-if="isOpen"
-        class="fixed right-0 top-0 h-full w-[450px] bg-white shadow-2xl z-50 p-6 overflow-y-auto"
+        class="fixed right-0 top-0 h-full w-[450px] bg-white shadow-2xl z-70 p-6 overflow-y-auto"
       >
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-xl font-bold"><slot name="title">Детали записи</slot></h2>
