@@ -15,19 +15,10 @@ const {
 const transactionDetailStore = useTransactionDetailStore()
 
 const summaryIncome = computed(() => {
-  return transactions.reduce(
-    (acc, tx) => {
-      const amount = useConversion ? tx.conversion?.resultAmount || 0 : tx.amount
-      return {
-        counting: acc.counting === '' ? `${amount}` : `${acc.counting} + ${amount}`,
-        result: acc.result + amount,
-      }
-    },
-    {
-      counting: '',
-      result: 0,
-    },
-  )
+  return transactions.reduce((acc, tx) => {
+    const amount = useConversion ? tx.conversion?.resultAmount || 0 : tx.amount
+    return acc + amount
+  }, 0)
 })
 </script>
 
@@ -43,11 +34,15 @@ const summaryIncome = computed(() => {
           v-for="(t, index) in transactions"
           :key="t.uuid"
           @click="() => transactionDetailStore.showDetail(t)"
-          >{{ index ? ` + ${t.amount}` : t.amount }}</span
         >
+          <span v-if="useConversion">{{
+            index ? ` + ${t.conversion?.resultAmount || 0}` : t.conversion?.resultAmount || 0
+          }}</span>
+          <span v-if="!useConversion">{{ index ? ` + ${t.amount}` : t.amount }}</span>
+        </span>
       </span>
       =
-      <span class="bold">{{ summaryIncome.result.toFixed(2) }} {{ currency }}</span>
+      <span class="bold">{{ summaryIncome.toFixed(2) }} {{ currency }}</span>
     </div>
   </div>
 </template>
