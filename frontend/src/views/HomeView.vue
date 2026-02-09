@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, effect } from 'vue'
+import { markRaw, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
 import EndSnack from '@/components/EndSnack.vue'
 import OutlineButton from '@/components/ui/OutlineButton.vue'
@@ -9,19 +9,18 @@ import STr from '@/components/ui/Table/STr.vue'
 import SThead from '@/components/ui/Table/SThead.vue'
 import STh from '@/components/ui/Table/STh.vue'
 import STBody from '@/components/ui/Table/STBody.vue'
-import SSidebar from '@/components/ui/SSidebar.vue'
 import TableFiltersButton from '@/components/TableFilters/TableFiltersButton.vue'
-import { useTransactionsStore } from '@/stores/transactions'
+import { useTransactionsStore, type TransactionExpanded } from '@/stores/transactions'
 import SummaryButton from '@/components/SummaryModal/SummaryButton.vue'
 import { convertTransactionToGELCurrency } from '@/helpers/convertTransactionToCurrency'
-
-const error = ref<string | null>(null)
-const isSidebarOpen = ref<boolean>(false)
+import { useTransactionDetailStore } from '@/stores/transactionDetail'
+import TransactionDetailSidebar from '@/components/TransactionDetailSidebar/TransactionDetailSidebar.vue'
 
 const transactionsStore = useTransactionsStore()
+const transactionDetailStore = useTransactionDetailStore()
 
-const openSidebar = () => {
-  isSidebarOpen.value = true
+const openTransactionDetail = (t: TransactionExpanded) => {
+  transactionDetailStore.showDetail(t)
 }
 
 const makeConversion = async () => {
@@ -36,14 +35,8 @@ const makeConversion = async () => {
     }
   })
 
-  toast.success(EndSnack, { closeButton: true })
+  toast.success(markRaw(EndSnack), { closeButton: true })
 }
-
-effect(() => {
-  if (error.value) {
-    toast.error(error.value)
-  }
-})
 
 onMounted(() => {
   if (transactionsStore.transactions.length === 0) {
@@ -56,17 +49,14 @@ onMounted(() => {
   <main class="py-4 px-5">
     <div class="flex gap-2 mb-2">
       <OutlineButton @click="() => makeConversion()">Конвертировать</OutlineButton>
-      <OutlineButton @click="() => openSidebar()">Open sidebar</OutlineButton>
       <TableFiltersButton />
       <SummaryButton />
     </div>
-    <SSidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false">
-      <p>Sidebar content goes here.</p>
-    </SSidebar>
+    <TransactionDetailSidebar />
     <STable>
       <SThead>
         <STr>
-          <STh>UUID</STh>
+          <STh>#</STh>
           <STh>Timestamp</STh>
           <STh>Amount</STh>
           <STh>Amount (GEL)</STh>
@@ -76,8 +66,12 @@ onMounted(() => {
         </STr>
       </SThead>
       <STBody>
-        <STr v-for="transaction in transactionsStore.transactions" :key="transaction.uuid">
-          <STd>{{ transaction.uuid }}</STd>
+        <STr v-for="(transaction, index) in transactionsStore.transactions" :key="transaction.uuid">
+          <STd
+            class="cursor-pointer hover:text-lime-600"
+            @click="() => openTransactionDetail(transaction)"
+            >{{ index + 1 }}</STd
+          >
           <STd>{{ transaction.timestamp }}</STd>
           <STd>{{ transaction.amount }}</STd>
           <STd>

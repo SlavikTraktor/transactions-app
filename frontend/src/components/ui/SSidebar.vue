@@ -31,7 +31,7 @@ const emit = defineEmits(['close'])
         class="fixed right-0 top-0 h-full w-[450px] bg-white shadow-2xl z-50 p-6 overflow-y-auto"
       >
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-bold">Детали записи</h2>
+          <h2 class="text-xl font-bold"><slot name="title">Детали записи</slot></h2>
           <button @click="emit('close')" class="px-2 py-1 hover:bg-gray-100 rounded-full cursor-pointer">✕</button>
         </div>
 

@@ -1,14 +1,7 @@
-<script setup lang="ts">
-defineProps<{
-  msg: string
-}>()
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <div>
-    Конвертация завершена!
-  </div>
+  <div>Конвертация завершена!</div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
