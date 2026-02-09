@@ -1,4 +1,3 @@
-const { default: axios } = require("axios");
 const { currenciesRateSingleURL } = require("../constants");
 
 class _CurrencyDate {
@@ -48,9 +47,13 @@ class _CurrencyDate {
     const url = currenciesRateSingleURL.replace("{date}", date).replace("{ccy}", ccy);
       console.log("Request 1");
 
-    const currencyDate = await axios
-      .get(url)
-      .then((response) => response.data)
+    const currencyDate = await fetch(url)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .catch((error) => {
         throw error;
       });

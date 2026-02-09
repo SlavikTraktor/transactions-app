@@ -1,4 +1,3 @@
-const { default: axios } = require("axios");
 const { currenciesRateRangeURL } = require("../constants");
 
 class _CurrenciesRange {
@@ -53,9 +52,13 @@ class _CurrenciesRange {
 
     console.log("Request");
 
-    const currenciesRange = await axios
-      .get(url)
-      .then((response) => response.data)
+    const currenciesRange = await fetch(url)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .catch((error) => {
         throw error;
       });

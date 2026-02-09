@@ -2,21 +2,22 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const { exeDir, isBundle, port } = require("./constants");
-const { Logger } = require("./services/logger");
-const { DB, migrate } = require("./services/db");
 const { extractBinary } = require("./helpers/extractBinary");
-const { Systray } = require("./services/systray");
-
-const currenciesGELRouter = require("./routes/currenciesGELRouter");
-const transactionsRouter = require("./routes/transactionsRouter");
-
-if (isBundle) {
-  extractBinary(exeDir);
-}
-
-migrate(DB);
+const { Logger } = require("./services/logger");
 
 try {
+  if (isBundle) {
+    extractBinary(exeDir);
+  }
+
+  const { DB, migrate } = require("./services/db");
+  const { Systray } = require("./services/systray");
+
+  const currenciesGELRouter = require("./routes/currenciesGELRouter");
+  const transactionsRouter = require("./routes/transactionsRouter");
+
+  migrate(DB);
+
   // --- СЕРВЕР ---
   const app = express();
   app.use(express.json());
@@ -38,8 +39,8 @@ try {
     console.log(`Сервер запущен на http://localhost:${port}`);
     Logger.log(`Сервер запущен на http://localhost:${port}`);
   });
+
+  new Systray(DB).init();
 } catch (error) {
   Logger.error(error.toString());
 }
-
-new Systray(DB).init();
