@@ -6,7 +6,7 @@ import OutlineButton from '@/components/ui/OutlineButton.vue'
 import STd from '@/components/ui/Table/STd.vue'
 import STable from '@/components/ui/Table/STable.vue'
 import STr from '@/components/ui/Table/STr.vue'
-import SThead from '@/components/ui/Table/SThead.vue'
+import STHead from '@/components/ui/Table/STHead.vue'
 import STh from '@/components/ui/Table/STh.vue'
 import STBody from '@/components/ui/Table/STBody.vue'
 import TableFiltersButton from '@/components/TableFilters/TableFiltersButton.vue'
@@ -54,7 +54,7 @@ onMounted(() => {
     </div>
     <TransactionDetailSidebar />
     <STable>
-      <SThead>
+      <STHead>
         <STr>
           <STh>#</STh>
           <STh>Timestamp</STh>
