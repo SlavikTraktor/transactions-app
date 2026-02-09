@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, effect } from 'vue'
-import _ from 'lodash'
 import { toast } from 'vue-sonner'
 import EndSnack from '@/components/EndSnack.vue'
-import { format } from 'date-fns'
 import OutlineButton from '@/components/ui/OutlineButton.vue'
 import STd from '@/components/ui/Table/STd.vue'
 import STable from '@/components/ui/Table/STable.vue'
@@ -11,12 +9,11 @@ import STr from '@/components/ui/Table/STr.vue'
 import SThead from '@/components/ui/Table/SThead.vue'
 import STh from '@/components/ui/Table/STh.vue'
 import STBody from '@/components/ui/Table/STBody.vue'
-import { getCurrenciesRatesRange } from '@/api/getCurrenciesRatesRange'
 import SSidebar from '@/components/ui/SSidebar.vue'
 import TableFiltersButton from '@/components/TableFilters/TableFiltersButton.vue'
 import { useTransactionsStore } from '@/stores/transactions'
 import SummaryButton from '@/components/SummaryModal/SummaryButton.vue'
-import { getCurrenciesRate } from '@/api/getCurrenciesRate'
+import { convertTransactionToGELCurrency } from '@/helpers/convertTransactionToCurrency'
 
 const error = ref<string | null>(null)
 const isSidebarOpen = ref<boolean>(false)
@@ -28,53 +25,17 @@ const openSidebar = () => {
 }
 
 const makeConversion = async () => {
-  const transactionsByCurrency = _.groupBy(transactionsStore.transactions, 'currency')
+  const convertedTransactions = await convertTransactionToGELCurrency(
+    transactionsStore.transactions,
+  )
 
-  for (const currency in transactionsByCurrency) {
-    const sortedTransactions = _.sortBy(transactionsByCurrency[currency]!, 'timestamp')
-
-    const beginDate = sortedTransactions[0]?.timestamp
-    const endDate = sortedTransactions[sortedTransactions.length - 1]?.timestamp
-
-    const currenciesRates =
-      currency === 'GEL' ? [] : await getCurrenciesRatesRange(beginDate!, endDate!, [currency])
-
-    for (const transaction of sortedTransactions) {
-      if (currency === 'GEL') {
-        transaction.conversion = {
-          fromCurrency: currency,
-          toCurrency: currency,
-          rate: 1,
-          resultAmount: transaction.amount,
-        }
-      } else {
-        const formattedTimestamp = format(
-          new Date(transaction.timestamp),
-          "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-        )
-
-        let rateForDate = currenciesRates.find((rate) => rate.date === formattedTimestamp)
-        if (!rateForDate) {
-          const rates = await getCurrenciesRate(formattedTimestamp, [currency])
-          rateForDate = rates[0];
-        }
-        const { rate, quantity } = rateForDate.currencies.find(
-          (c) => c.code === transaction.currency,
-        )!
-        transaction.conversion = {
-          fromCurrency: transaction.currency,
-          toCurrency: 'GEL',
-          rate,
-          resultAmount: +((transaction.amount * rate) / quantity).toFixed(2),
-        }
-      }
-
-      const index = transactionsStore.transactions.findIndex((t) => t.uuid === transaction.uuid)
-      if (index !== -1) {
-        transactionsStore.transactions[index]!.conversion = transaction.conversion
-      }
+  convertedTransactions.forEach((transaction) => {
+    const index = transactionsStore.transactions.findIndex((t) => t.uuid === transaction.uuid)
+    if (index !== -1) {
+      transactionsStore.transactions[index]!.conversion = transaction.conversion
     }
-  }
+  })
+
   toast.success(EndSnack, { closeButton: true })
 }
 
