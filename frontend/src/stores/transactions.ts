@@ -22,7 +22,7 @@ interface LoadTransactionsParams {
 
 export const useTransactionsStore = defineStore('transactions', () => {
   const transactions = ref<TransactionExpanded[]>([])
-  const isLoaded = ref<boolean>(false)
+  const loadCounter = ref<number>(0)
 
   const filterStore = useTransactionsFiltersStore()
 
@@ -37,15 +37,21 @@ export const useTransactionsStore = defineStore('transactions', () => {
         sources: sources,
         startDate: dateRange && dateRange[0] ? format(dateRange[0], DATE_FORMAT) : undefined,
         endDate: dateRange && dateRange[1] ? format(dateRange[1], DATE_FORMAT) : undefined,
+        order: filterStore.order,
       })
-      isLoaded.value = true
+      loadCounter.value++
     } catch (err) {
       console.error(err)
     }
   }
 
   watch(
-    [() => filterStore.currencies, () => filterStore.sources, () => filterStore.dateRange],
+    [
+      () => filterStore.currencies,
+      () => filterStore.sources,
+      () => filterStore.dateRange,
+      () => filterStore.order,
+    ],
     ([currencies, sources, dateRange]) => {
       loadTransactions({
         currencies,
@@ -55,5 +61,5 @@ export const useTransactionsStore = defineStore('transactions', () => {
     },
   )
 
-  return { transactions, isLoaded, loadTransactions }
+  return { transactions, loadCounter, loadTransactions }
 })

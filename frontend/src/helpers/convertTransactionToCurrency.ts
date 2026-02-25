@@ -3,6 +3,7 @@ import { getCurrenciesRatesRange } from '@/api/getCurrenciesRatesRange'
 import type { TransactionExpanded } from '@/stores/transactions'
 import type { CurrencyUnion } from '@/types/currencyUnion'
 import { format } from 'date-fns'
+import _ from 'lodash'
 
 const GELtoGELRate = {
   rate: 1,
@@ -13,9 +14,10 @@ export const convertTransactionToCurrency = async (
   transactions: TransactionExpanded[],
   currency: CurrencyUnion = 'USD',
 ) => {
-  const currenciesList = [...new Set(transactions.map((t) => t.currency))].filter(
+  // We need to sort to ensure that cache will be the same for same set of currencies (it is better to do it on a backend but I dont care)
+  const currenciesList = _.sortBy([...new Set(transactions.map((t) => t.currency))].filter(
     (c) => c !== 'GEL',
-  )
+  ), (v) => v)
 
   const resTransactions: TransactionExpanded[] = []
 

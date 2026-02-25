@@ -1,6 +1,7 @@
 const express = require("express");
 const { startOfMonth, format } = require("date-fns");
 const { DB } = require("../services/db");
+const { getTransactionsOrderBy } = require("../helpers/getTransactionsOrderBy");
 const router = express.Router();
 
 const getStartOfThisMonthFormatted = () => {
@@ -14,6 +15,8 @@ router.get("/transactions", (req, res) => {
   const currencies = req.query.currencies;
   const startDate = req.query.startDate || getStartOfThisMonthFormatted();
   const endDate = req.query.endDate;
+  const orderBy = req.query.orderBy || "timestamp";
+  const order = req.query.order || "desc";
 
   let sql = "SELECT * FROM transactions";
   const params = [];
@@ -39,7 +42,7 @@ router.get("/transactions", (req, res) => {
     params.push(...currenciesArray);
   }
 
-  sql += " ORDER BY timestamp DESC";
+  sql += ` ORDER BY ${getTransactionsOrderBy(orderBy)} ${order === "asc" ? "ASC" : "DESC"}`;
 
   const rows = DB.prepare(sql).all(...params);
 

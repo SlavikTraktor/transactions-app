@@ -1,4 +1,5 @@
 import { BACKEND_URL } from '@/constants'
+import type { Order } from '@/types/order'
 import axios from 'axios'
 
 export interface Transaction {
@@ -16,6 +17,7 @@ interface GetTransactonsParams {
   endDate?: string
   currencies?: string[]
   sources?: string[]
+  order?: Order
 }
 
 export const getTransactions = async (params: GetTransactonsParams): Promise<Transaction[]> => {
@@ -27,6 +29,11 @@ export const getTransactions = async (params: GetTransactonsParams): Promise<Tra
   }
   if (params.sources && params.sources.length > 0) {
     queryParams.append('sources', params.sources.join(','))
+  }
+
+  if (params.order) {
+    queryParams.append('orderBy', params.order.orderBy)
+    queryParams.append('order', params.order.order)
   }
 
   return axios

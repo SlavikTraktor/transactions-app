@@ -1,11 +1,13 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import type { Order } from '@/types/order'
 
 export const useTransactionsFiltersStore = defineStore('transactionsFilters', () => {
   const dateRange = ref<[Date, Date | null]>()
   const currencies = ref<string[]>()
   const sources = ref<string[]>()
   const isMonthlyView = ref(true)
+  const order = ref<Order>({ orderBy: 'timestamp', order: 'desc' })
 
   const setFilters = (filters: {
     dateRange?: [Date, Date | null]
@@ -32,5 +34,5 @@ export const useTransactionsFiltersStore = defineStore('transactionsFilters', ()
     return count
   })
 
-  return { dateRange, currencies, sources, isMonthlyView, activeFiltersCount, setFilters }
+  return { dateRange, currencies, sources, isMonthlyView, activeFiltersCount, order, setFilters }
 })

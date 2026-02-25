@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import STh from './ui/Table/STh.vue';
+import STh from '../ui/Table/STh.vue';
 
 import Select from 'primevue/select';
 import { useConversionStore } from '@/stores/conversionStore';

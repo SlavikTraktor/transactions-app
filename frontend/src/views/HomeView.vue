@@ -14,8 +14,9 @@ import SummaryButton from '@/components/SummaryModal/SummaryButton.vue'
 import { convertTransactionToCurrency } from '@/helpers/convertTransactionToCurrency'
 import { useTransactionDetailStore } from '@/stores/transactionDetail'
 import TransactionDetailSidebar from '@/components/TransactionDetailSidebar/TransactionDetailSidebar.vue'
-import ConvertedAmountTh from '@/components/ConvertedAmountTh.vue'
+import ConvertedAmountTh from '@/components/TableHeaders/ConvertedAmountTh.vue'
 import { useConversionStore } from '@/stores/conversionStore'
+import OrderedTh from '@/components/TableHeaders/OrderedTh.vue'
 
 const transactionsStore = useTransactionsStore()
 const transactionDetailStore = useTransactionDetailStore()
@@ -25,14 +26,9 @@ const openTransactionDetail = (t: TransactionExpanded) => {
   transactionDetailStore.showDetail(t)
 }
 
-watch(
-  [() => transactionsStore.isLoaded, () => conversionStore.currency],
-  (isLoaded) => {
-    if (isLoaded) {
-      makeConversion()
-    }
-  },
-)
+watch([() => transactionsStore.loadCounter, () => conversionStore.currency], () => {
+  makeConversion()
+})
 
 const makeConversion = async () => {
   const convertedTransactions = await convertTransactionToCurrency(
@@ -68,12 +64,12 @@ onMounted(() => {
       <STHead>
         <STr>
           <STh>#</STh>
-          <STh>Timestamp</STh>
+          <OrderedTh name="timestamp">Timestamp</OrderedTh>
           <STh>Amount</STh>
-          <STh>Currency</STh>
+          <OrderedTh name="currency">Currency</OrderedTh>
           <ConvertedAmountTh />
-          <STh>Sender</STh>
-          <STh>Source Type</STh>
+          <OrderedTh name="sender">Sender</OrderedTh>
+          <OrderedTh name="source_type">Source Type</OrderedTh>
         </STr>
       </STHead>
       <STBody>
