@@ -70,9 +70,9 @@ onMounted(() => {
           <STh>#</STh>
           <STh>Timestamp</STh>
           <STh>Amount</STh>
+          <STh>Currency</STh>
           <ConvertedAmountTh />
           <STh>Sender</STh>
-          <STh>Currency</STh>
           <STh>Source Type</STh>
         </STr>
       </STHead>
@@ -85,11 +85,11 @@ onMounted(() => {
           >
           <STd>{{ transaction.timestamp.slice(0, -9) }}</STd>
           <STd>{{ transaction.amount }}</STd>
+          <STd>{{ transaction.currency }}</STd>
           <STd>
             {{ transaction.conversion?.resultAmount }}
           </STd>
           <STd>{{ transaction.sender }}</STd>
-          <STd>{{ transaction.currency }}</STd>
           <STd>{{ transaction.source_type }}</STd>
         </STr>
       </STBody>
