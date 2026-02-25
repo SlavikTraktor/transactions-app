@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { markRaw, onMounted } from 'vue'
+import { markRaw, onMounted, toRaw, watch } from 'vue'
 import { toast } from 'vue-sonner'
 import EndSnack from '@/components/EndSnack.vue'
-import OutlineButton from '@/components/ui/OutlineButton.vue'
 import STd from '@/components/ui/Table/STd.vue'
 import STable from '@/components/ui/Table/STable.vue'
 import STr from '@/components/ui/Table/STr.vue'
@@ -12,20 +11,33 @@ import STBody from '@/components/ui/Table/STBody.vue'
 import TableFiltersButton from '@/components/TableFilters/TableFiltersButton.vue'
 import { useTransactionsStore, type TransactionExpanded } from '@/stores/transactions'
 import SummaryButton from '@/components/SummaryModal/SummaryButton.vue'
-import { convertTransactionToGELCurrency } from '@/helpers/convertTransactionToCurrency'
+import { convertTransactionToCurrency } from '@/helpers/convertTransactionToCurrency'
 import { useTransactionDetailStore } from '@/stores/transactionDetail'
 import TransactionDetailSidebar from '@/components/TransactionDetailSidebar/TransactionDetailSidebar.vue'
+import ConvertedAmountTh from '@/components/ConvertedAmountTh.vue'
+import { useConversionStore } from '@/stores/conversionStore'
 
 const transactionsStore = useTransactionsStore()
 const transactionDetailStore = useTransactionDetailStore()
+const conversionStore = useConversionStore()
 
 const openTransactionDetail = (t: TransactionExpanded) => {
   transactionDetailStore.showDetail(t)
 }
 
+watch(
+  [() => transactionsStore.isLoaded, () => conversionStore.currency],
+  (isLoaded) => {
+    if (isLoaded) {
+      makeConversion()
+    }
+  },
+)
+
 const makeConversion = async () => {
-  const convertedTransactions = await convertTransactionToGELCurrency(
-    transactionsStore.transactions,
+  const convertedTransactions = await convertTransactionToCurrency(
+    structuredClone(toRaw(transactionsStore.transactions)),
+    conversionStore.currency,
   )
 
   convertedTransactions.forEach((transaction) => {
@@ -48,7 +60,6 @@ onMounted(() => {
 <template>
   <main class="py-4 px-5">
     <div class="flex gap-2 mb-2">
-      <OutlineButton @click="() => makeConversion()">Конвертировать</OutlineButton>
       <TableFiltersButton />
       <SummaryButton />
     </div>
@@ -59,12 +70,12 @@ onMounted(() => {
           <STh>#</STh>
           <STh>Timestamp</STh>
           <STh>Amount</STh>
-          <STh>Amount (GEL)</STh>
+          <ConvertedAmountTh />
           <STh>Sender</STh>
           <STh>Currency</STh>
           <STh>Source Type</STh>
         </STr>
-      </SThead>
+      </STHead>
       <STBody>
         <STr v-for="(transaction, index) in transactionsStore.transactions" :key="transaction.uuid">
           <STd
@@ -72,7 +83,7 @@ onMounted(() => {
             @click="() => openTransactionDetail(transaction)"
             >{{ index + 1 }}</STd
           >
-          <STd>{{ transaction.timestamp }}</STd>
+          <STd>{{ transaction.timestamp.slice(0, -9) }}</STd>
           <STd>{{ transaction.amount }}</STd>
           <STd>
             {{ transaction.conversion?.resultAmount }}

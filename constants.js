@@ -21,9 +21,9 @@ const iconPath = path.join(__dirname, "assets", "icon.ico");
 
 const frontendURL = `http://localhost:${port}`;
 
-const currenciesRateRangeURL = "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies/?currencies={ccy}&end={endDate}&start={startDate}"; // 2025-11-30T20:00:00.000Z to 2025-12-30T20:00:00.000Z
+const currenciesRateRangeURL = "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies/?end={endDate}&start={startDate}"; // 2025-11-30T20:00:00.000Z to 2025-12-30T20:00:00.000Z
 
-const currenciesRateSingleURL = "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies/?currencies={ccy}&date={date}"; // 2025-11-29 YYYY-MM-DD
+const currenciesRateSingleURL = "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies/?date={date}"; // 2025-11-29 YYYY-MM-DD
 
 module.exports = {
   isBundle,

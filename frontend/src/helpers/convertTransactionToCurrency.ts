@@ -1,55 +1,91 @@
 import { getCurrenciesRate } from '@/api/getCurrenciesRate'
 import { getCurrenciesRatesRange } from '@/api/getCurrenciesRatesRange'
 import type { TransactionExpanded } from '@/stores/transactions'
+import type { CurrencyUnion } from '@/types/currencyUnion'
 import { format } from 'date-fns'
-import _ from 'lodash'
 
-export const convertTransactionToGELCurrency = async (transactions: TransactionExpanded[]) => {
-  const transactionsByCurrency = _.groupBy(transactions, 'currency')
+const GELtoGELRate = {
+  rate: 1,
+  quantity: 1,
+}
+
+export const convertTransactionToCurrency = async (
+  transactions: TransactionExpanded[],
+  currency: CurrencyUnion = 'USD',
+) => {
+  const currenciesList = [...new Set(transactions.map((t) => t.currency))].filter(
+    (c) => c !== 'GEL',
+  )
 
   const resTransactions: TransactionExpanded[] = []
 
-  for (const currency in transactionsByCurrency) {
-    const sortedTransactions = _.sortBy(transactionsByCurrency[currency]!, 'timestamp')
+  const { beginDate, endDate } = transactions.reduce(
+    (acc, transaction) => {
+      if (transaction.currency === 'GEL') {
+        return acc
+      }
+      if (acc.beginDate === '' || new Date(transaction.timestamp) < new Date(acc.beginDate)) {
+        acc.beginDate = transaction.timestamp
+      }
+      if (acc.endDate === '' || new Date(transaction.timestamp) > new Date(acc.endDate)) {
+        acc.endDate = transaction.timestamp
+      }
+      return acc
+    },
+    { beginDate: '', endDate: '' },
+  )
 
-    const beginDate = sortedTransactions[0]?.timestamp
-    const endDate = sortedTransactions[sortedTransactions.length - 1]?.timestamp
-
-    const currenciesRates =
-      currency === 'GEL' ? [] : await getCurrenciesRatesRange(beginDate!, endDate!, [currency])
-
-    for (const transaction of sortedTransactions) {
-      if (currency === 'GEL') {
-        transaction.conversion = {
-          fromCurrency: currency,
-          toCurrency: currency,
-          rate: 1,
-          resultAmount: transaction.amount,
-        }
-      } else {
-        const formattedTimestamp = format(
-          new Date(transaction.timestamp),
-          "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+  const currenciesRates =
+    beginDate && endDate
+      ? await getCurrenciesRatesRange(
+          new Date(beginDate).toISOString(),
+          new Date(endDate).toISOString(),
+          currenciesList,
         )
+      : []
 
-        let rateForDate = currenciesRates.find((rate) => rate.date === formattedTimestamp)
-        if (!rateForDate) {
-          const rates = await getCurrenciesRate(formattedTimestamp, [currency])
-          rateForDate = rates[0]
-        }
-        const { rate, quantity } = rateForDate.currencies.find(
-          (c) => c.code === transaction.currency,
-        )!
-        transaction.conversion = {
-          fromCurrency: transaction.currency,
-          toCurrency: 'GEL',
-          rate,
-          resultAmount: +((transaction.amount * rate) / quantity).toFixed(2),
-        }
+  for (const transaction of transactions) {
+    if (transaction.currency === currency) {
+      transaction.conversion = {
+        fromCurrency: transaction.currency,
+        toCurrency: currency,
+        rate: 1,
+        resultAmount: transaction.amount,
+      }
+    } else {
+      const formattedTimestamp = format(
+        new Date(transaction.timestamp),
+        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+      )
+
+      let rateForDate = currenciesRates.find((rate) => rate.date === formattedTimestamp)
+      if (!rateForDate) {
+        const formattedTimestamp = format(new Date(transaction.timestamp), 'yyyy-MM-dd')
+        const rates = await getCurrenciesRate(formattedTimestamp, currenciesList)
+        rateForDate = rates[0]
       }
 
-      resTransactions.push(transaction)
+      const currenciesPair = rateForDate.currencies.filter(
+        (c) => c.code === transaction.currency || c.code === currency,
+      )
+      const ourCurrencyRate =
+        currenciesPair.find((c) => c.code === transaction.currency) || GELtoGELRate
+      const toCurrencyRate = currenciesPair.find((c) => c.code === currency) || GELtoGELRate
+
+      const currencyRate =
+        ourCurrencyRate.rate /
+        ourCurrencyRate.quantity /
+        (toCurrencyRate.rate / toCurrencyRate.quantity)
+
+      transaction.conversion = {
+        fromCurrency: transaction.currency,
+        toCurrency: currency,
+        rate: currencyRate,
+        resultAmount: +(transaction.amount * currencyRate).toFixed(2),
+      }
     }
+
+    resTransactions.push(transaction)
   }
 
   return resTransactions

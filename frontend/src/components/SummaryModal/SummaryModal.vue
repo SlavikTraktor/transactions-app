@@ -5,6 +5,7 @@ import SModal from '../ui/SModal.vue'
 import { computed } from 'vue'
 import _ from 'lodash'
 import SummaryCounting from './SummaryCounting.vue'
+import { useConversionStore } from '@/stores/conversionStore'
 
 defineProps({
   isOpen: Boolean,
@@ -13,6 +14,7 @@ defineProps({
 defineEmits(['close'])
 
 const store = useTransactionsStore()
+const conversionStore = useConversionStore()
 
 const groppedByCurrency = computed(() => {
   return _.groupBy(store.transactions, 'currency')
@@ -32,10 +34,10 @@ const groppedByCurrency = computed(() => {
         <template v-slot:title>{{ currency }}</template>
       </SummaryCounting>
       <SummaryCounting
-        currency="GEL"
+        :currency="conversionStore.currency"
         :useConversion="true"
         :transactions="store.transactions">
-        <template v-slot:title>Итог по всем валютам в GEL</template>
+        <template v-slot:title>Итог по всем валютам в {{conversionStore.currency}}</template>
       </SummaryCounting>
     </div>
     <template v-slot:actions>

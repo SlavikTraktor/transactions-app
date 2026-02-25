@@ -22,6 +22,7 @@ interface LoadTransactionsParams {
 
 export const useTransactionsStore = defineStore('transactions', () => {
   const transactions = ref<TransactionExpanded[]>([])
+  const isLoaded = ref<boolean>(false)
 
   const filterStore = useTransactionsFiltersStore()
 
@@ -37,6 +38,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         startDate: dateRange && dateRange[0] ? format(dateRange[0], DATE_FORMAT) : undefined,
         endDate: dateRange && dateRange[1] ? format(dateRange[1], DATE_FORMAT) : undefined,
       })
+      isLoaded.value = true
     } catch (err) {
       console.error(err)
     }
@@ -53,5 +55,5 @@ export const useTransactionsStore = defineStore('transactions', () => {
     },
   )
 
-  return { transactions, loadTransactions }
+  return { transactions, isLoaded, loadTransactions }
 })

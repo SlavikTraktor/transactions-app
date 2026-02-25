@@ -45,10 +45,13 @@ class _CurrenciesRange {
       return cacheValue;
     }
 
-    const url = currenciesRateRangeURL
+    let url = currenciesRateRangeURL
       .replace("{startDate}", startDate)
       .replace("{endDate}", endDate)
-      .replace("{ccy}", ccy);
+
+    ccy.split(",").forEach((currency) => {
+      url += `&currencies=${currency}`;
+    })
 
     console.log("Request");
 

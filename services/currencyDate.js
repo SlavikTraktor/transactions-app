@@ -44,8 +44,12 @@ class _CurrencyDate {
       return cacheValue;
     }
 
-    const url = currenciesRateSingleURL.replace("{date}", date).replace("{ccy}", ccy);
-      console.log("Request 1");
+    let url = currenciesRateSingleURL.replace("{date}", date);
+
+    ccy.split(",").forEach((currency) => {
+      url += `&currencies=${currency}`;
+    });
+    console.log("Request 1");
 
     const currencyDate = await fetch(url)
       .then((response) => {
