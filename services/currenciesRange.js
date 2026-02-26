@@ -2,7 +2,7 @@ const { currenciesRateRangeURL } = require("../constants");
 
 class _CurrenciesRange {
   MAX_CACHE_SIZE = 15;
-  MAX_CACHE_DAYS = 40;
+  MAX_CACHE_DAYS = 50;
 
   constructor() {
     this.cache = new Map();

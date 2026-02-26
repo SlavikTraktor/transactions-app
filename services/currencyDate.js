@@ -1,7 +1,7 @@
 const { currenciesRateSingleURL } = require("../constants");
 
 class _CurrencyDate {
-  MAX_CACHE_SIZE = 50;
+  MAX_CACHE_SIZE = 100;
 
   constructor() {
     this.cache = new Map();
