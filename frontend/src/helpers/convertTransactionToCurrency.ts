@@ -15,7 +15,7 @@ export const convertTransactionToCurrency = async (
   currency: CurrencyUnion = 'USD',
 ) => {
   // We need to sort to ensure that cache will be the same for same set of currencies (it is better to do it on a backend but I dont care)
-  const currenciesList = _.sortBy([...new Set(transactions.map((t) => t.currency))].filter(
+  const currenciesList = _.sortBy([...new Set(transactions.map((t) => t.currency)).add(currency)].filter(
     (c) => c !== 'GEL',
   ), (v) => v)
 

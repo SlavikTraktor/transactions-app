@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import BaseFilter from './BaseFilter.vue'
 import { useTransactionsFiltersStore } from '@/stores/transactionsFilters'
 import { endOfMonth, startOfDay, startOfMonth } from 'date-fns'
+import HelpTooltip from '../ui/HelpTooltip.vue'
 
 const store = useTransactionsFiltersStore()
 const dateRange = ref<[Date, Date | null] | undefined>(store.dateRange)
@@ -36,12 +37,7 @@ defineExpose({ value: resDateRange, clear })
   <BaseFilter>
     <template v-slot:title>
       Диапазон дат:
-      <span
-        class="bg-gray-200 px-1.5 rounded-full cursor-pointer"
-        v-tooltip.top="'Если оставить пустым, то показывается текущий месяц'"
-      >
-        ?
-      </span>
+      <HelpTooltip text="Если оставить пустым, то показывается текущий месяц" />
     </template>
     <div class="flex items-center mb-2">
       <ToggleSwitch inputId="monthlyView" v-model="store.isMonthlyView" />
