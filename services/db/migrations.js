@@ -30,6 +30,7 @@ function migrate(DB) {
     sender TEXT,
     currency TEXT NOT NULL,
     source_type TEXT,
+    is_inactive INTEGER NOT NULL DEFAULT 0 CHECK (is_inactive IN (0, 1)),
     FOREIGN KEY (source_type) REFERENCES sources(type)
   )
 `,
