@@ -16,8 +16,10 @@ defineEmits(['close'])
 const store = useTransactionsStore()
 const conversionStore = useConversionStore()
 
+const activeTransactions = computed(() => store.transactions.filter(t => !t.is_inactive))
+
 const groppedByCurrency = computed(() => {
-  return _.groupBy(store.transactions, 'currency')
+  return _.groupBy(activeTransactions.value, 'currency')
 })
 </script>
 
@@ -36,7 +38,7 @@ const groppedByCurrency = computed(() => {
       <SummaryCounting
         :currency="conversionStore.currency"
         :useConversion="true"
-        :transactions="store.transactions">
+        :transactions="activeTransactions">
         <template v-slot:title>Итог по всем валютам в {{conversionStore.currency}}</template>
       </SummaryCounting>
     </div>

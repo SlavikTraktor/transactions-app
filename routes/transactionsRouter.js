@@ -49,6 +49,17 @@ router.get("/transactions", (req, res) => {
   res.json(rows);
 });
 
+router.post("/toggleinactive", (req, res) => {
+  const { transactionId } = req.body;
+
+  DB.run(
+    "UPDATE transactions SET is_inactive = 1 - is_inactive WHERE id = ?",
+    [transactionId],
+  );
+  
+  res.json({ success: true });
+});
+
 router.post("/transactions", (req, res) => {
   // uuid timestamp amount description sender currency source_type
   const { data } = req.body;

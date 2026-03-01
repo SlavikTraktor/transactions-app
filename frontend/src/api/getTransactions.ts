@@ -3,6 +3,7 @@ import type { Order } from '@/types/order'
 import axios from 'axios'
 
 export interface Transaction {
+  id: number
   uuid: string
   timestamp: string
   amount: number
@@ -10,6 +11,7 @@ export interface Transaction {
   sender: string
   currency: string
   source_type: string
+  is_inactive: number
 }
 
 interface GetTransactonsParams {
