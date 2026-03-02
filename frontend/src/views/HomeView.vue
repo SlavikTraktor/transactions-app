@@ -17,6 +17,8 @@ import TransactionDetailSidebar from '@/components/TransactionDetailSidebar/Tran
 import ConvertedAmountTh from '@/components/TableHeaders/ConvertedAmountTh.vue'
 import { useConversionStore } from '@/stores/conversionStore'
 import OrderedTh from '@/components/TableHeaders/OrderedTh.vue'
+import RefreshButton from '@/components/RefreshButton.vue'
+import HelpTooltip from '@/components/ui/HelpTooltip.vue'
 
 const transactionsStore = useTransactionsStore()
 const transactionDetailStore = useTransactionDetailStore()
@@ -58,6 +60,7 @@ onMounted(() => {
     <div class="flex gap-2 mb-2">
       <TableFiltersButton />
       <SummaryButton />
+      <RefreshButton />
     </div>
     <TransactionDetailSidebar />
     <STable>
@@ -67,6 +70,12 @@ onMounted(() => {
           <OrderedTh name="timestamp">Timestamp</OrderedTh>
           <STh>Amount</STh>
           <OrderedTh name="currency">Currency</OrderedTh>
+          <STh>
+            Inactive
+            <HelpTooltip
+              text="Неактивные транзакции не учитываются в подсчётах, однако показываются в таблице"
+            />
+          </STh>
           <ConvertedAmountTh />
           <OrderedTh name="sender">Sender</OrderedTh>
           <OrderedTh name="source_type">Source Type</OrderedTh>
@@ -82,6 +91,16 @@ onMounted(() => {
           <STd>{{ transaction.timestamp.slice(0, -9) }}</STd>
           <STd>{{ transaction.amount }}</STd>
           <STd>{{ transaction.currency }}</STd>
+          <STd>
+            <span
+              :class="{
+                'text-pink-400': transaction.is_inactive,
+                'text-lime-600': !transaction.is_inactive,
+              }"
+            >
+              {{ transaction.is_inactive ? 'Да' : 'Нет' }}
+            </span>
+          </STd>
           <STd>
             {{ transaction.conversion?.resultAmount }}
           </STd>

@@ -12,16 +12,19 @@ const store = useTransactionDetailStore()
 const isInactive = ref(false)
 const isLoading = ref(false)
 
-watch(() => store.isSidebarOpen, (isOpen) => {
-  if(isOpen) {
-    isInactive.value = !!store.transaction?.is_inactive
-  }
-})
+watch(
+  () => store.isSidebarOpen,
+  (isOpen) => {
+    if (isOpen) {
+      isInactive.value = !!store.transaction?.is_inactive
+    }
+  },
+)
 
 async function toggleInactive() {
   isLoading.value = true
   isInactive.value = !isInactive.value
-
+  store.transaction!.is_inactive = Number(isInactive.value)
   await fetch(`${BACKEND_URL}api/toggleinactive`, {
     method: 'POST',
     headers: {
@@ -34,10 +37,11 @@ async function toggleInactive() {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       toast.success('Я сделяль')
-      isLoading.value = false
     })
-    .catch((error) => {
-      toast.success('Я не сделяль')
+    .catch(() => {
+      toast.error('Я не сделяль')
+    })
+    .finally(() => {
       isLoading.value = false
     })
 }

@@ -14,27 +14,18 @@ export type TransactionExpanded = Transaction & {
   }
 }
 
-interface LoadTransactionsParams {
-  currencies?: string[]
-  sources?: string[]
-  dateRange?: [Date, Date | null]
-}
-
 export const useTransactionsStore = defineStore('transactions', () => {
   const transactions = ref<TransactionExpanded[]>([])
   const loadCounter = ref<number>(0)
 
   const filterStore = useTransactionsFiltersStore()
 
-  const loadTransactions = async ({
-    currencies,
-    sources,
-    dateRange,
-  }: LoadTransactionsParams = {}) => {
+  const loadTransactions = async () => {
+    const dateRange = filterStore.dateRange
     try {
       transactions.value = await getTransactions({
-        currencies: currencies,
-        sources: sources,
+        currencies: filterStore.currencies,
+        sources: filterStore.sources,
         startDate: dateRange && dateRange[0] ? format(dateRange[0], DATE_FORMAT) : undefined,
         endDate: dateRange && dateRange[1] ? format(dateRange[1], DATE_FORMAT) : undefined,
         order: filterStore.order,
@@ -52,12 +43,8 @@ export const useTransactionsStore = defineStore('transactions', () => {
       () => filterStore.dateRange,
       () => filterStore.order,
     ],
-    ([currencies, sources, dateRange]) => {
-      loadTransactions({
-        currencies,
-        sources,
-        dateRange,
-      })
+    () => {
+      loadTransactions()
     },
   )
 
