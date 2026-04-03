@@ -71,7 +71,7 @@ onMounted(() => {
           <STh>Amount</STh>
           <OrderedTh name="currency">Currency</OrderedTh>
           <STh>
-            Inactive
+            Active
             <HelpTooltip
               text="Неактивные транзакции не учитываются в подсчётах, однако показываются в таблице"
             />
@@ -98,7 +98,7 @@ onMounted(() => {
                 'text-lime-600': !transaction.is_inactive,
               }"
             >
-              {{ transaction.is_inactive ? 'Да' : 'Нет' }}
+              {{ transaction.is_inactive ? 'Нет' : 'Да' }}
             </span>
           </STd>
           <STd>
