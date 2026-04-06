@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
-const { appUpdateURL, tempDir, exeDir, isBundle } = require("../constants");
+const { tempDir, exeDir, isBundle } = require("../constants");
 const { DB } = require("./db");
 
 const appUpdateURL = "https://api.github.com/repos/SlavikTraktor/transactions-app/releases/latest";
@@ -71,9 +71,9 @@ class _UpdateService {
     const currentVersion = this.getCurrentVersion();
     const latestVersion = await this.getLatestVersion(latestInfo);
 
-    // if (latestVersion.replace("v", "") === currentVersion) {
-    //   return;
-    // }
+    if (latestVersion === currentVersion) {
+      return;
+    }
     const asset = latestInfo.assets[0];
     const downloadURL = asset.browser_download_url;
 

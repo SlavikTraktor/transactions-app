@@ -15,6 +15,7 @@ try {
 
   const currenciesGELRouter = require("./routes/currenciesGELRouter");
   const transactionsRouter = require("./routes/transactionsRouter");
+  const updateRouter = require("./routes/updateRouter");
 
   migrate(DB);
 
@@ -30,6 +31,7 @@ try {
   // API Эндпоинты
   app.use("/api", currenciesGELRouter);
   app.use("/api", transactionsRouter);
+  app.use("/api", updateRouter);
 
   app.get(/^(?!\/api).+/, (req, res) => {
     res.sendFile(path.join(distPath, "index.html"));
