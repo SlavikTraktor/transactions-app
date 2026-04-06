@@ -1,5 +1,8 @@
 /node_modules
 /dist-app
+/temp
 /db
 
 log.txt
+_update.bat
+transactions-app.exe

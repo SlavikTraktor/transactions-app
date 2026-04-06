@@ -14,9 +14,9 @@ class _Logger {
     fs.appendFileSync(this.logfile, `[${timestamp}] ${message}\n`);
   }
 
-  error(message) {
+  error(message, ...args) {
     const timestamp = new Date().toISOString();
-    fs.appendFileSync(this.logfile, `[${timestamp}] ERROR: ${message}\n`);
+    fs.appendFileSync(this.logfile, `[${timestamp}] ERROR: ${message}\n${JSON.stringify(args)}`, );
   }
 }
 

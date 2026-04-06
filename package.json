@@ -27,7 +27,8 @@
       "assets/**/*",
       "frontend/dist/**/*",
       "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
-      "node_modules/systray2/traybin/tray_windows_release.exe"
+      "node_modules/systray2/traybin/tray_windows_release.exe",
+      "package.json"
     ],
     "targets": [
       "node20-win-x64"
