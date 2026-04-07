@@ -3,6 +3,7 @@ const path = require("path");
 const { spawn } = require("child_process");
 const { tempDir, exeDir, isBundle } = require("../constants");
 const { DB } = require("./db");
+const { FileDownloadService } = require("./fileDownloadService");
 
 const appUpdateURL = "https://api.github.com/repos/SlavikTraktor/transactions-app/releases/latest";
 const batPath = path.join(exeDir, "_update.bat");
@@ -10,6 +11,7 @@ const newExePath = path.join(tempDir, "transactions-app.exe");
 const currentExe = path.join(exeDir, "transactions-app.exe");
 
 class _UpdateService {
+  fileDownloadService = null;
   constructor(db) {
     this.db = db;
   }
@@ -19,7 +21,7 @@ class _UpdateService {
     return await response.json();
   }
 
-  async getLatestVersion(info) {
+  async getLatestVersion(info = null) {
     const data = info ? info : await this.getLatestInfo();
     return data.tag_name.replace("v", "");
   }
@@ -56,7 +58,11 @@ class _UpdateService {
 
   async updateAplication() {
     try {
-      await this.downloadAppUpdate();
+      const latestInfo = await this.getLatestInfo();
+      if(!await this.doNeedUpdate(latestInfo)) {
+        return;
+      }
+      await this.downloadAppUpdate(latestInfo.assets[0]);
       this.createUpdateBatFile();
       this.replaceAppWithNewVersion(); // will replace the app and restart it, so we can exit current instance
       isBundle && this.stopCurrentApp();
@@ -66,48 +72,19 @@ class _UpdateService {
     }
   }
 
-  async downloadAppUpdate() {
-    const latestInfo = await this.getLatestInfo();
-    const currentVersion = this.getCurrentVersion();
-    const latestVersion = await this.getLatestVersion(latestInfo);
-
-    if (latestVersion === currentVersion) {
-      return;
-    }
-    const asset = latestInfo.assets[0];
+  async downloadAppUpdate(asset) {
     const downloadURL = asset.browser_download_url;
+    this.fileDownloadService = new FileDownloadService(tempDir);
 
-    this.createTempDir();
-
-    const fileRes = await fetch(downloadURL, { headers: { "User-Agent": "Node.js" } });
-    if (!fileRes.ok) throw new Error(`HTTP error: ${fileRes.status}`);
-    const totalSizeKB = parseInt(fileRes.headers.get("content-length") || "0") / 1024; // Convert to KB
-
-    const fileStream = fs.createWriteStream(path.join(tempDir, asset.name));
-    const reader = fileRes.body.getReader();
-
-    let downloaded = 0;
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      fileStream.write(Buffer.from(value));
-      downloaded += value.length / 1024; // Convert to KB
-
-      if (totalSizeKB > 0) {
-        const percent = ((downloaded / totalSizeKB) * 100).toFixed(1);
-        const mb = (downloaded / 1024).toFixed(1);
-        const total = (totalSizeKB / 1024).toFixed(1);
-        console.log(`Downloaded: ${mb} MB / ${total} MB (${percent}%)`);
-      }
-    }
-    fileStream.end();
+    const filePath = await this.fileDownloadService.downloadFile(downloadURL, asset.name);
+    return filePath;
   }
 
-  createTempDir() {
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir);
-    }
+  async doNeedUpdate(latestInfo) {
+    const currentVersion = this.getCurrentVersion();
+    const latestVersion = await this.getLatestVersion(latestInfo);
+    console.log(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
+    return currentVersion !== latestVersion;
   }
 }
 
