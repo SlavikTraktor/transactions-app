@@ -10,7 +10,18 @@ const batPath = path.join(exeDir, "_update.bat");
 const newExePath = path.join(tempDir, "transactions-app.exe");
 const currentExe = path.join(exeDir, "transactions-app.exe");
 
+const statusEnum = {
+  idle: "idle",
+  downloading: "downloading",
+  applying: "applying",
+  done: "done",
+  error: "error",
+};
+
 class _UpdateService {
+  status = statusEnum.idle;
+  error = null;
+  isUpdating = false;
   fileDownloadService = null;
   constructor(db) {
     this.db = db;
@@ -57,16 +68,28 @@ class _UpdateService {
   }
 
   async updateAplication() {
+    if (this.status === statusEnum.downloading || this.status === statusEnum.applying) {
+      console.log("Update already in progress");
+      return;
+    }
     try {
+      this.error = null;
+      this.status = statusEnum.downloading;
       const latestInfo = await this.getLatestInfo();
-      if(!await this.doNeedUpdate(latestInfo)) {
+      if (!(await this.doNeedUpdate(latestInfo))) {
         return;
       }
       await this.downloadAppUpdate(latestInfo.assets[0]);
+
+      this.status = statusEnum.applying;
       this.createUpdateBatFile();
       this.replaceAppWithNewVersion(); // will replace the app and restart it, so we can exit current instance
+
+      this.status = statusEnum.done;
       isBundle && this.stopCurrentApp();
     } catch (error) {
+      this.status = statusEnum.error;
+      this.error = error.message;
       console.log("Error applying update: " + error.message);
       throw new Error("Error applying update: " + error.message);
     }
@@ -85,6 +108,16 @@ class _UpdateService {
     const latestVersion = await this.getLatestVersion(latestInfo);
     console.log(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
     return currentVersion !== latestVersion;
+  }
+
+  getCurrentStatus() {
+    return {
+      status: this.status,
+      error: this.error,
+      downloadedMB: this.fileDownloadService?.downloadedMB || 0,
+      totalSizeMB: this.fileDownloadService?.totalSizeMB || 0,
+      percent: this.fileDownloadService?.percent || 0,
+    };
   }
 }
 
